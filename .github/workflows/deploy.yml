@@ -18,13 +18,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Set gcloud project
+      - name: Set gcloud project and configure Docker
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker --quiet
 
       - name: Build image
         run: |
