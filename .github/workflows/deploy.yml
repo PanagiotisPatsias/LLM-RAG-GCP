@@ -27,16 +27,19 @@ jobs:
         run: docker build -t llm-rag-app .
 
       - name: Tag image
-        run: docker tag llm-rag-app ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/llm-rag-repo/llm-rag-app:${{ github.sha }}
+        run: docker tag llm-rag-app europe-west1-docker.pkg.dev/llm-rag-gcp/llm-rag-repo/llm-rag-app:${{ github.sha }}
+
 
       - name: Push image
-        run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/llm-rag-repo/llm-rag-app:${{ github.sha }}
+        run: docker push europe-west1-docker.pkg.dev/llm-rag-gcp/llm-rag-repo/llm-rag-app:${{ github.sha }}
+
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy llm-rag-service \
-            --image=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/llm-rag-repo/llm-rag-app:${{ github.sha }} \
-            --region=${{ secrets.GCP_REGION }} \
+            --image=europe-west1-docker.pkg.dev/llm-rag-gcp/llm-rag-repo/llm-rag-app:${{ github.sha }} \
+            --region=europe-west1 \
             --platform=managed \
             --allow-unauthenticated \
             --set-env-vars=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+
