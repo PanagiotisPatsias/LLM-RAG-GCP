@@ -51,4 +51,5 @@ jobs:
             --region=$GCP_REGION \
             --platform=managed \
             --allow-unauthenticated \
-            --set-env-vars=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            --set-env-vars=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},CHROMA_PERSIST_DIR=/tmp/chroma_db
+

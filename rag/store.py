@@ -19,7 +19,7 @@ class VectorStoreConfig:
     - Streamlit UI has no DB setup logic
     - ingestion/retrieval/eval all share the same collection
     """
-    persist_path: str = "./chroma_db"
+    persist_path: str = os.getenv("CHROMA_PERSIST_DIR", "/tmp/chroma_db")
     collection_name: str = "rag-docs"
     embedding_model: str = "text-embedding-3-small"
     openai_api_key_env: str = "OPENAI_API_KEY"
