@@ -1,0 +1,31 @@
+[
+  {
+    "id": "adv-1",
+    "question": "Does the GDPR mandate using AES-256 encryption specifically for all stored personal data?",
+    "ideal_answer": "No. The GDPR requires appropriate technical and organisational measures to ensure security, but it does not mandate a specific algorithm such as AES-256."
+  },
+  {
+    "id": "adv-2",
+    "question": "Does the GDPR require appointing a Data Protection Officer for every company with more than 50 employees?",
+    "ideal_answer": "No. The GDPR requires a Data Protection Officer only in specific cases (e.g., public authorities, large-scale regular and systematic monitoring, or large-scale processing of special categories of data), not based on a simple employee threshold."
+  },
+  {
+    "id": "adv-3",
+    "question": "What is the exact fine amount in euros for a single GDPR breach in all cases?",
+    "ideal_answer": "There is no single exact fine for all cases. The GDPR sets maximum administrative fine tiers (e.g., up to 10 million EUR or 20 million EUR, or a percentage of global turnover), depending on the infringement."
+  },
+  {
+    "id": "adv-4",
+    "question": "Is anonymised data always considered personal data under the GDPR?",
+    "ideal_answer": "No. Truly anonymised data is not personal data; however, pseudonymised data can still be personal data if individuals remain identifiable."
+  },
+  {
+    "id": "adv-5",
+    "question": "Does the GDPR allow processing personal data solely because it is useful for a company’s business goals?",
+    "ideal_answer": "No. Processing requires a valid lawful basis under the GDPR; business usefulness alone is not sufficient."
+  },
+    { "id": "ua-2", "question": "What is the CEO's name of the European Data Protection Board?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+
+     { "id": "ua-8", "question": "What is the phone number of the European Commission office responsible for the GDPR?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+     { "id": "ua-10", "question": "What is the encryption key length (in bits) required by the GDPR for databases?", "ideal_answer": "The provided context does not contain enough information to answer this question." }
+]

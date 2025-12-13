@@ -1,0 +1,64 @@
+name: CI - LLM Quality Gates
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
+
+      # --- CI golden gate (fast) ---
+      - name: Golden CI gate
+        run: |
+          python -m evaluation.eval_runner \
+            --dataset evaluation/datasets/ci_golden.json \
+            --mode ci \
+            --output evaluation/artifacts/ci_results.jsonl
+
+          python -m evaluation.quality_gate \
+            --results evaluation/artifacts/ci_results.jsonl \
+            --min-overall 0.80
+
+      # --- Unanswerable refusal gate ---
+      - name: Unanswerable refusal gate
+        run: |
+          python -m evaluation.eval_runner \
+            --dataset evaluation/datasets/ci_unanswerable.json \
+            --mode nightly \
+            --output evaluation/artifacts/unanswerable_results.jsonl \
+            --top-k 8
+
+          python -m evaluation.refusal_gate \
+            --results evaluation/artifacts/unanswerable_results.jsonl \
+            --min-refusal-rate 0.90
+
+      # --- Adversarial cite-or-refuse gate ---
+      - name: Adversarial cite-or-refuse gate
+        run: |
+          python -m evaluation.eval_runner \
+            --dataset evaluation/datasets/ci_adversarial.json \
+            --mode nightly \
+            --output evaluation/artifacts/adversarial_results.jsonl \
+            --top-k 8
+
+          python -m evaluation.hallucination_gate \
+            --results evaluation/artifacts/adversarial_results.jsonl \
+            --max-hallucination-rate 0.10

@@ -1,106 +1,106 @@
+# evaluation/eval_runner.py
+from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from .judge_llm import evaluate_answer_with_judge_llm
+from evaluation.judge import judge_answer
+from rag.retriever import format_context, Chunk
+from rag.generator import answer_question
 
 
-def load_dataset(path: Path) -> List[Dict[str, Any]]:
-    """
-    Load evaluation dataset. Expects a JSON file with a list of items, each like:
-
-    {
-      "id": "ex1",
-      "question": "...",
-      "ideal_answer": "...",
-      "context": "...",
-      "rag_answer": "...",              # (filled by generate_rag_answers.py)
-      "retrieved_chunks": ["...", ...]  # optional, for debugging
-    }
-    """
-    if not path.exists():
-        raise FileNotFoundError(f"Dataset not found: {path}")
-
-    with path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-
+def load_json_list(path: Path) -> List[Dict[str, Any]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, list):
-        raise ValueError(f"Expected a JSON list, got: {type(data)}")
-
+        raise ValueError("Dataset must be a JSON list.")
     return data
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Run LLM-as-a-judge evaluation on a RAG dataset."
-    )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        required=True,
-        help="Path to JSON dataset (e.g. rag_dataset.json).",
-    )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="evaluation_results.jsonl",
-        help="Where to store evaluation results (JSONL).",
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="gpt-4.1-mini",
-        help="OpenAI model to use as the judge.",
-    )
+def write_jsonl(path: Path, rows: List[Dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    args = parser.parse_args()
+
+def main():
+    p = argparse.ArgumentParser(description="Run evaluation suite.")
+    p.add_argument("--dataset", required=True, help="Path to dataset JSON")
+    p.add_argument("--output", default="evaluation/artifacts/results.jsonl", help="Output JSONL path")
+    p.add_argument("--mode", choices=["ci", "nightly"], default="ci",
+                   help="ci: frozen-context / nightly: end-to-end RAG")
+    p.add_argument("--top-k", type=int, default=4, help="Top-k retrieval for nightly mode")
+    p.add_argument("--judge-model", default="gpt-4.1-mini")
+    args = p.parse_args()
 
     dataset_path = Path(args.dataset)
-    output_path = Path(args.output)
+    out_path = Path(args.output)
 
-    items = load_dataset(dataset_path)
-    print(f"Loaded {len(items)} examples from {dataset_path}")
+    data = load_json_list(dataset_path)
+    rows: List[Dict[str, Any]] = []
 
-    with output_path.open("w", encoding="utf-8") as out_f:
-        for i, ex in enumerate(items, start=1):
-            q = ex["question"]
-            rag_answer = ex.get("rag_answer") or ex.get("golden_rag_answer", "")
+    for i, ex in enumerate(data, start=1):
+        ex_id = ex.get("id", f"ex{i}")
+        q = ex["question"]
+        ideal = ex.get("ideal_answer")
 
-            context = ex.get("context", "")
-            ideal = ex.get("ideal_answer")
+        if args.mode == "ci":
+            # frozen context is inside dataset
+            # answer is expected to be already provided (baseline) for determinism
+            context_text = ex.get("context", "")
+            answer = ex.get("golden_rag_answer") or ex.get("golden_answer") or ""
+            # format context with [1],[2] style even if it's a single block
+            context = f"[1] {context_text}" if context_text else "No relevant context found."
+            retrieved_debug = ex.get("retrieved_chunks", [])
+        else:
+            # nightly: run end-to-end RAG (retrieval+generation)
+            rag = answer_question(q, top_k=args.top_k)
+            answer = rag.answer
+            context = format_context(rag.chunks)
+            retrieved_debug = [
+                {
+                    "id": c.id,
+                    "source": c.source,
+                    "chunk_index": c.chunk_index,
+                    "distance": c.distance,
+                }
+                for c in rag.chunks
+            ]
 
-            if not rag_answer:
-                print(f"[{i}] WARNING: missing rag_answer for id={ex.get('id')}, skipping.")
-                continue
+        jr = judge_answer(
+            question=q,
+            answer=answer,
+            context=context,
+            ideal_answer=ideal,
+            model=args.judge_model,
+        )
 
-            # You could also choose to pass retrieved_chunks as part of the context if desired.
-            scores = evaluate_answer_with_judge_llm(
-                question=q,
-                rag_answer=rag_answer,
-                context=context,
-                ideal_answer=ideal,
-                model=args.model,
-            )
+        row = {
+            "id": ex_id,
+            "question": q,
+            "ideal_answer": ideal,
+            "answer": answer,
+            "mode": args.mode,
+            "scores": {
+                "relevance": jr.relevance,
+                "correctness": jr.correctness,
+                "grounding": jr.grounding,
+                "completeness": jr.completeness,
+                "reasoning_quality": jr.reasoning_quality,
+                "overall": jr.overall,
+            },
+            "explanation": jr.explanation,
+            "retrieval": retrieved_debug,
+        }
+        rows.append(row)
+        print(f"[{i}/{len(data)}] id={ex_id} overall={jr.overall:.3f}")
 
-            row = {
-                "id": ex.get("id", i),
-                "question": q,
-                "rag_answer": rag_answer,
-                "context": context,
-                "ideal_answer": ideal,
-                "scores": scores.to_dict(),
-            }
-
-            out_f.write(json.dumps(row, ensure_ascii=False) + "\n")
-            print(
-                f"[{i}/{len(items)}] id={row['id']} "
-                f"overall={scores.overall:.3f} "
-                f"(rel={scores.relevance:.3f}, corr={scores.correctness:.3f}, "
-                f"ground={scores.grounding:.3f})"
-            )
-
-    print(f"Evaluation results saved to: {output_path}")
+    write_jsonl(out_path, rows)
+    mean_overall = sum(r["scores"]["overall"] for r in rows) / max(len(rows), 1)
+    print(f"\nSaved: {out_path}")
+    print(f"Mean overall: {mean_overall:.3f}")
 
 
 if __name__ == "__main__":

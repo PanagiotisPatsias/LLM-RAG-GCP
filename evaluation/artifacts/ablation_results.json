@@ -1,0 +1,42 @@
+[
+  {
+    "ablation": "chunk_size",
+    "chunk_size": 800,
+    "chunk_overlap": 200,
+    "top_k": 4,
+    "mean_overall": 0.77,
+    "n": 5
+  },
+  {
+    "ablation": "chunk_size",
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "top_k": 4,
+    "mean_overall": 0.8,
+    "n": 5
+  },
+  {
+    "ablation": "top_k",
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "top_k": 2,
+    "mean_overall": 0.9,
+    "n": 5
+  },
+  {
+    "ablation": "top_k",
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "top_k": 4,
+    "mean_overall": 0.8240000000000001,
+    "n": 5
+  },
+  {
+    "ablation": "top_k",
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "top_k": 8,
+    "mean_overall": 0.97,
+    "n": 5
+  }
+]

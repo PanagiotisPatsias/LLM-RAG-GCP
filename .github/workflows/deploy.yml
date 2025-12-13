@@ -1,4 +1,4 @@
-name: Deploy to Cloud Run with LLM Quality Gate
+name: Deploy to Cloud Run
 
 on:
   push:
@@ -9,98 +9,45 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Global env vars available to all steps
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GCP_PROJECT_ID: llm-rag-gcp
       GCP_REGION: europe-west1
       SERVICE_NAME: llm-rag-service
       IMAGE_NAME: llm-rag-app
+      REPO_NAME: llm-rag-repo
 
     steps:
-      # --------------------------------------------------
-      # 1) Checkout repository
-      # --------------------------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --------------------------------------------------
-      # 2) Setup Python (for evaluation scripts)
-      # --------------------------------------------------
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      # --------------------------------------------------
-      # 3) Install Python dependencies
-      # --------------------------------------------------
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
-
-      # --------------------------------------------------
-      # 4) 🔒 MLOps QUALITY GATE (LLM-as-a-judge)
-      #    - NO RAG querying here
-      #    - Evaluate frozen golden set
-      # --------------------------------------------------
-      - name: Run LLM evaluation (CI quality gate)
-        run: |
-          python -m evaluation.eval_runner \
-            --dataset evaluation/ci_golden.json \
-            --output ci_eval_results.jsonl
-
-          python -m evaluation.check_quality \
-            --results ci_eval_results.jsonl \
-            --min-overall 0.80
-
-      # --------------------------------------------------
-      # 5) Authenticate to Google Cloud (Service Account)
-      # --------------------------------------------------
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      # --------------------------------------------------
-      # 6) Configure gcloud + Docker auth for Artifact Registry
-      # --------------------------------------------------
       - name: Configure gcloud and Docker
         run: |
           gcloud config set project $GCP_PROJECT_ID
           gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
 
-      # --------------------------------------------------
-      # 7) Build Docker image
-      # --------------------------------------------------
       - name: Build Docker image
         run: |
           docker build -t $IMAGE_NAME .
 
-      # --------------------------------------------------
-      # 8) Tag Docker image for Artifact Registry
-      # --------------------------------------------------
       - name: Tag Docker image
         run: |
           docker tag $IMAGE_NAME \
-            ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/llm-rag-repo/$IMAGE_NAME:${{ github.sha }}
+            ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${{ github.sha }}
 
-      # --------------------------------------------------
-      # 9) Push image to Artifact Registry
-      # --------------------------------------------------
       - name: Push Docker image
         run: |
           docker push \
-            ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/llm-rag-repo/$IMAGE_NAME:${{ github.sha }}
+            ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${{ github.sha }}
 
-      # --------------------------------------------------
-      # 10) Deploy to Cloud Run
-      # --------------------------------------------------
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME \
-            --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/llm-rag-repo/$IMAGE_NAME:${{ github.sha }} \
+            --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${{ github.sha }} \
             --region=$GCP_REGION \
             --platform=managed \
             --allow-unauthenticated \

@@ -1,0 +1,10 @@
+[
+  { "id": "ua-1", "question": "What is the maximum civil penalty per violation under HIPAA?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-3", "question": "Provide the full text of Article 6 of the GDPR verbatim.", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-4", "question": "Under Swiss law, what are the specific criminal sanctions for violating GDPR?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-5", "question": "What is the official URL where the GDPR was first published online?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-6", "question": "Which U.S. states have GDPR-equivalent privacy laws listed in the GDPR text?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-7", "question": "What is the exact number of employees at the European Data Protection Board?", "ideal_answer": "The provided context does not contain enough information to answer this question." },
+  { "id": "ua-9", "question": "What was the stock price of Thomson Reuters on the GDPR publication date?", "ideal_answer": "The provided context does not contain enough information to answer this question." }
+  
+]
