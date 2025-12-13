@@ -1,6 +1,7 @@
 FROM python:3.11-slim
 
 WORKDIR /app
+ENV PYTHONPATH=/app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -16,6 +17,7 @@ ENV CHROMA_PERSIST_DIR=/tmp/chroma_db
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "streamlit run app/streamlit_app.py --server.address=0.0.0.0 --server.port=${PORT:-8080} --server.headless=true --browser.gatherUsageStats=false"]
+CMD ["sh", "-c", "streamlit run app/streamlit_app.py --server.address=0.0.0.0 --server.port=${PORT:-8080} --server.headless=true"]
+
 
 
