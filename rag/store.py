@@ -33,7 +33,7 @@ def _get_openai_api_key(env_name: str = "OPENAI_API_KEY") -> str:
         )
     return key
 
-
+# It makes the client.
 def get_chroma_client(config: VectorStoreConfig = VectorStoreConfig()) -> chromadb.PersistentClient:
     """
     Returns a persistent Chroma client.
@@ -51,7 +51,7 @@ def get_embedding_function(config: VectorStoreConfig = VectorStoreConfig()):
         model_name=config.embedding_model,
     )
 
-
+# 
 def get_collection(
     config: VectorStoreConfig = VectorStoreConfig(),
     *,

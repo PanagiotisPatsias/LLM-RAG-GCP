@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 from typing import Dict, List, Any
-
+from dotenv import load_dotenv
 from evaluation.judge import judge_answer
 from rag.generator import answer_question
 from rag.ingest import ingest_pdf_dir
@@ -29,7 +29,7 @@ def main():
     p.add_argument("--output", default="evaluation/artifacts/ablation_results.json")
     p.add_argument("--judge-model", default="gpt-4.1-mini")
     args = p.parse_args()
-
+    load_dotenv()
     dataset = load_json_list(Path(args.dataset))
     questions = [ex["question"] for ex in dataset]
 

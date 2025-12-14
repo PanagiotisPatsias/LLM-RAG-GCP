@@ -42,6 +42,7 @@ def main():
     rows: List[Dict[str, Any]] = []
 
     for i, ex in enumerate(data, start=1):
+        print(f"Evaluating example {data}..")
         ex_id = ex.get("id", f"ex{i}")
         q = ex["question"]
         ideal = ex.get("ideal_answer")

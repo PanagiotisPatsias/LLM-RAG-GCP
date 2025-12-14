@@ -61,7 +61,7 @@ def ingest_pdf_path(
     collection.add(documents=chunks, ids=ids, metadatas=metadatas)
     return len(chunks)
 
-
+#Without this function the RAG cannot see the uploaded PDFs in Streamlit because they are provided as bytes and wants pdfs or director with pdfs.
 def ingest_pdf_bytes(
     pdf_bytes: bytes,
     *,
