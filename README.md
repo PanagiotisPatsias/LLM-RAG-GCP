@@ -81,6 +81,27 @@ This separation enables:
 
 ---
 
+## Monitoring (stdout-only)
+
+Each RAG request emits structured JSON metrics to stdout, including:
+
+- request_id
+- latency_ms
+- retrieval distances
+- refusal flag
+- citation flag
+- model name
+- collection name
+- Designed to work seamlessly on Cloud Run without external monitoring tools.
+
+Includes:
+
+- simulated drift detection
+
+- simple alert rules (logged)
+
+---
+
 ## 📊 Evaluation Framework (Key Contribution)
 
 A major focus of this project is **automated LLM evaluation**, inspired by real-world evaluation systems used in production AI teams.
@@ -125,7 +146,21 @@ Each answer is scored using **LLM-as-a-Judge** with a strict JSON schema:
 Evaluation is reproducible and fully automated.
 
 ---
+## Doc-to-Action Agent
 
+A business-facing AI agent that transforms retrieved evidence into
+structured consulting deliverables.
+
+Capabilities:
+
+- RAG-based evidence retrieval
+- strict JSON output
+- executive summary
+- action checklist
+- risks & mitigations
+- citations per action
+
+---
 ## 🛑 Safety & Trust Mechanisms
 
 ### Deterministic Refusals
@@ -194,6 +229,7 @@ This project showcases:
 - CI/CD for AI workflows
 - monitoring, evaluation, and safety
 - clean, modular, reusable engineering practices
+- lightweight monitoring and drift simulation (stdout-based)
 
 
 ---
