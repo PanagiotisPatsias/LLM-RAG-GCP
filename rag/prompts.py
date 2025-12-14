@@ -1,4 +1,4 @@
-# rag/prompts.py
+# rag/prompts.py 
 
 RAG_SYSTEM_PROMPT = """You are a helpful assistant.
 You must answer ONLY using the provided context.

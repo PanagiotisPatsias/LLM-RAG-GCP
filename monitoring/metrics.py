@@ -22,7 +22,7 @@ class InferenceMetric:
     timestamp: str
     request_id: str
 
-    # privacy-preserving fields
+    # privacy-preserving fields 
     question_len: int
     question_sha1: str
 

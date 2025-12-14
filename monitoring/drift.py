@@ -21,7 +21,7 @@ def load_baseline(path: str = "monitoring/baseline.json") -> Optional[Baseline]:
         mean_distance_mean=float(data["mean_distance_mean"]),
     )
 
-
+#
 def compute_drift_score(current: Baseline, baseline: Baseline) -> dict:
     """
     Very simple drift score: absolute deltas.

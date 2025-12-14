@@ -1,4 +1,4 @@
-# agents/prompts.py
+# agents/prompts.py 
 
 AGENT_SYSTEM_PROMPT = """
 You are a senior AI consultant. You turn retrieved evidence into an actionable deliverable.
